@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50 text-slate-900">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CareerChain AI | Resume & Career Advisor{% endblock %}</title>
+    
+    <!-- Tailwind CSS v4 CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        accent: {
+                            50: '#f5f3ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        },
+                        ui: {
+                            bg: '#f8fafc',
+                            card: '#ffffff',
+                            hover: '#f1f5f9',
+                            border: '#e2e8f0',
+                            textMuted: '#64748b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            position: relative;
+        }
+
+        /* Subtle Ambient Radial Backlight */
+        .ambient-glow {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.03) 0%, rgba(99, 102, 241, 0) 70%);
+            top: -200px;
+            right: -100px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Clean Premium Card styling */
+        .premium-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .premium-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Nav links active effects */
+        .nav-item {
+            transition: all 0.15s ease;
+        }
+        .nav-item.active {
+            background-color: #f1f5f9;
+            color: #4f46e5;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 99px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full flex overflow-hidden antialiased bg-slate-50">
+
+    <!-- Ambient Glow Background -->
+    <div class="ambient-glow"></div>
+
+    {% if user.is_authenticated %}
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 hidden md:flex z-10">
+        <div>
+            <!-- Header Logo -->
+            <div class="h-16 flex items-center px-6 border-b border-slate-200 bg-white">
+                <a href="{% url 'dashboard_home' %}" class="flex items-center gap-2.5">
+                    <!-- Unique Custom Logo SVG representing Career Chains -->
+                    <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center border border-indigo-100 shadow-sm shrink-0">
+                        <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="16" cy="7" r="2.5" stroke="currentColor" stroke-width="2"/>
+                            <circle cx="7" cy="12" r="2.5" stroke="currentColor" stroke-width="2"/>
+                            <circle cx="17" cy="17" r="2.5" stroke="currentColor" stroke-width="2"/>
+                            <path d="M9.5 11L13.5 8M15.5 15.5L14 8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-display font-bold text-sm tracking-tight text-slate-800">CareerChain AI</span>
+                        <span class="text-[8px] font-extrabold tracking-wider text-slate-400 uppercase -mt-0.5">Advisor Platform</span>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- Sidebar Navigation -->
+            <nav class="p-3 space-y-1 mt-4">
+                <a href="{% url 'dashboard_home' %}" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold {% if request.resolver_match.url_name == 'dashboard_home' %}active{% else %}text-slate-500 hover:bg-slate-100 hover:text-slate-800{% endif %}">
+                    <i class="fa-solid fa-chart-line w-4 text-center"></i>
+                    Dashboard Overview
+                </a>
+                <a href="{% url 'resume_upload' %}" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold {% if request.resolver_match.url_name == 'resume_upload' %}active{% else %}text-slate-500 hover:bg-slate-100 hover:text-slate-800{% endif %}">
+                    <i class="fa-solid fa-file-arrow-up w-4 text-center"></i>
+                    Upload Resume
+                </a>
+                <a href="{% url 'match_create' %}" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold {% if request.resolver_match.url_name == 'match_create' or request.resolver_match.url_name == 'analysis_detail' %}active{% else %}text-slate-500 hover:bg-slate-100 hover:text-slate-800{% endif %}">
+                    <i class="fa-solid fa-bullseye w-4 text-center"></i>
+                    Resume Matcher
+                </a>
+                <a href="{% url 'career_recommend' %}" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold {% if request.resolver_match.url_name == 'career_recommend' or request.resolver_match.url_name == 'roadmap_detail' %}active{% else %}text-slate-500 hover:bg-slate-100 hover:text-slate-800{% endif %}">
+                    <i class="fa-solid fa-route w-4 text-center"></i>
+                    Career Roadmap
+                </a>
+                <a href="{% url 'profile' %}" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold {% if request.resolver_match.url_name == 'profile' %}active{% else %}text-slate-500 hover:bg-slate-100 hover:text-slate-800{% endif %}">
+                    <i class="fa-solid fa-user-gear w-4 text-center"></i>
+                    Profile & Settings
+                </a>
+            </nav>
+        </div>
+        
+        <!-- User Section / Sign Out -->
+        <div class="p-3 border-t border-slate-200 bg-white">
+            <div class="flex items-center gap-3 mb-3 px-2 py-1.5 rounded-lg">
+                <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-user text-xs text-slate-500"></i>
+                </div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-semibold text-slate-800 truncate">{{ user.username }}</p>
+                    <p class="text-[9px] text-slate-400 font-bold truncate tracking-wide">Candidate Profile</p>
+                </div>
+            </div>
+            <a href="{% url 'logout' %}" class="flex items-center gap-2.5 px-3 py-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all text-xs font-semibold border border-transparent">
+                <i class="fa-solid fa-right-from-bracket w-4 text-center"></i>
+                Sign Out
+            </a>
+        </div>
+    </aside>
+    {% endif %}
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden z-10 bg-slate-50">
+        <!-- Top bar -->
+        <header class="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-8 shrink-0">
+            <div class="flex items-center gap-4">
+                {% if user.is_authenticated %}
+                <button class="md:hidden text-slate-600 hover:text-slate-800 focus:outline-none">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+                {% endif %}
+                <h1 class="text-md font-bold text-slate-800 font-display">{% block page_title %}Dashboard{% endblock %}</h1>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <span class="text-[10px] font-semibold px-2.5 py-1 bg-slate-100 border border-slate-200 text-slate-500 rounded-md flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                    SBERT Pipeline Online
+                </span>
+            </div>
+        </header>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="px-8 pt-4 space-y-2 shrink-0">
+            {% for message in messages %}
+            <div class="p-3 rounded-lg flex items-center justify-between border text-xs {% if message.tags == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800{% elif message.tags == 'error' %}bg-rose-50 border-rose-200 text-rose-800{% else %}bg-slate-100 border-slate-200 text-slate-800{% endif %}">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% elif message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-info{% endif %}"></i>
+                    <p class="font-semibold">{{ message }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Content viewport -->
+        <main class="flex-1 overflow-y-auto p-8">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+</body>
+</html>

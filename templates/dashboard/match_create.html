@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Resume Matcher | CareerChain AI{% endblock %}
+{% block page_title %}Resume Matcher Evaluation{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="premium-card p-6 sm:p-8 rounded-xl shadow-md relative overflow-hidden bg-white border-slate-200">
+        
+        <div class="text-center pb-6 border-b border-slate-100 mb-6">
+            <h2 class="text-xl font-bold text-slate-800 font-display">Calculate Resume-to-Job Suitability</h2>
+            <p class="text-slate-500 text-xs mt-1">Select a candidate resume profile and specify the job criteria to compute SBERT semantic similarity and skill gap counts.</p>
+        </div>
+
+        <form method="POST" action="{% url 'match_create' %}" id="match-form" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- 1. Select Resume -->
+            <div>
+                <label for="resume_id" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">1. Select Candidate Resume Profile</label>
+                <div class="relative">
+                    <select name="resume_id" id="resume_id" required class="appearance-none rounded-lg block w-full px-4 py-2.5 border border-slate-200 bg-slate-50 text-slate-850 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs font-semibold transition-all cursor-pointer">
+                        <option value="">-- Choose a resume --</option>
+                        {% for res in resumes %}
+                            <option value="{{ res.id }}" {% if request.GET.resume_id|add:"0" == res.id %}selected{% endif %}>{{ res.filename }} (Parsed {{ res.resume_skills.count }} skills)</option>
+                        {% endfor %}
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                    </div>
+                </div>
+                {% if not resumes %}
+                <p class="text-xs text-red-500 mt-2">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> You need to upload a resume first!
+                    <a href="{% url 'resume_upload' %}" class="underline text-indigo-600 font-semibold hover:text-indigo-500 ml-1">Upload Resume</a>
+                </p>
+                {% endif %}
+            </div>
+
+            <!-- 2. Toggle Target Job Type -->
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">2. Job Specification Method</label>
+                <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-50 rounded-lg border border-slate-200">
+                    <button type="button" id="toggle-predefined" class="py-1.5 rounded text-xs font-bold transition bg-white border border-slate-200 text-indigo-600 shadow-sm">
+                        Predefined Role Catalog
+                    </button>
+                    <button type="button" id="toggle-custom" class="py-1.5 rounded text-xs font-bold transition text-slate-500 hover:text-slate-700">
+                        Custom Job Description
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3A. Predefined Job Role Section -->
+            <div id="section-predefined" class="space-y-4">
+                <div>
+                    <label for="job_role_id" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Select Target Job Role</label>
+                    <div class="relative">
+                        <select name="job_role_id" id="job_role_id" class="appearance-none rounded-lg block w-full px-4 py-2.5 border border-slate-200 bg-slate-50 text-slate-850 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs font-semibold transition-all cursor-pointer">
+                            <option value="">-- Choose a job role --</option>
+                            {% for role in job_roles %}
+                                <option value="{{ role.id }}">{{ role.name }} ({{ role.industry }})</option>
+                            {% endfor %}
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3B. Custom Job Description Section (hidden by default) -->
+            <div id="section-custom" class="space-y-4 hidden">
+                <div>
+                    <label for="custom_title" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Target Job Title</label>
+                    <input id="custom_title" name="custom_title" type="text" class="appearance-none rounded-lg relative block w-full px-4 py-2.5 border border-slate-200 bg-slate-50 text-slate-850 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs font-semibold transition-all" placeholder="e.g. Senior Software Engineer">
+                </div>
+                <div>
+                    <label for="custom_jd" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Job Description Details</label>
+                    <textarea id="custom_jd" name="custom_jd" rows="5" class="appearance-none rounded-lg relative block w-full px-4 py-2.5 border border-slate-200 bg-slate-50 text-slate-850 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs font-semibold transition-all" placeholder="Paste job descriptions, duties, required qualifications and tech stack..."></textarea>
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex justify-end gap-2.5 pt-4 border-t border-slate-100" id="form-actions">
+                <a href="{% url 'dashboard_home' %}" class="px-4 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-bold text-xs transition">Cancel</a>
+                <button type="submit" id="submit-btn" class="px-4 py-2 rounded-lg text-white bg-indigo-600 hover:bg-indigo-500 font-bold text-xs transition shadow-sm active:scale-[0.98] cursor-pointer">
+                    Calculate Suitability
+                </button>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading-state" class="hidden flex flex-col items-center justify-center py-6 text-center">
+                <svg class="animate-spin -ml-1 mr-3 h-7 w-7 text-indigo-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-xs font-bold text-slate-700">Executing SBERT Cosine Matching...</p>
+                <p class="text-[10px] text-slate-400 mt-1 max-w-xs leading-relaxed">Comparing vectors, mapping skills, and scoring education metrics. This will be ready in a moment.</p>
+            </div>
+            
+        </form>
+    </div>
+</div>
+
+<script>
+    const btnPredefined = document.getElementById('toggle-predefined');
+    const btnCustom = document.getElementById('toggle-custom');
+    
+    const secPredefined = document.getElementById('section-predefined');
+    const secCustom = document.getElementById('section-custom');
+    
+    const jobRoleSelect = document.getElementById('job_role_id');
+    const customTitle = document.getElementById('custom_title');
+    const customJd = document.getElementById('custom_jd');
+    
+    const matchForm = document.getElementById('match-form');
+    const formActions = document.getElementById('form-actions');
+    const loadingState = document.getElementById('loading-state');
+    
+    btnPredefined.addEventListener('click', () => {
+        btnPredefined.className = "py-1.5 rounded text-xs font-bold transition bg-white border border-slate-200 text-indigo-600 shadow-sm";
+        btnCustom.className = "py-1.5 rounded text-xs font-bold transition text-slate-500 hover:text-slate-700";
+        
+        secPredefined.classList.remove('hidden');
+        secCustom.classList.add('hidden');
+        
+        jobRoleSelect.setAttribute('required', '');
+        customTitle.removeAttribute('required');
+        customJd.removeAttribute('required');
+    });
+    
+    btnCustom.addEventListener('click', () => {
+        btnCustom.className = "py-1.5 rounded text-xs font-bold transition bg-white border border-slate-200 text-indigo-600 shadow-sm";
+        btnPredefined.className = "py-1.5 rounded text-xs font-bold transition text-slate-500 hover:text-slate-700";
+        
+        secCustom.classList.remove('hidden');
+        secPredefined.classList.add('hidden');
+        
+        customTitle.setAttribute('required', '');
+        customJd.setAttribute('required', '');
+        jobRoleSelect.removeAttribute('required');
+    });
+    
+    // Set default validation attributes
+    jobRoleSelect.setAttribute('required', '');
+    
+    matchForm.addEventListener('submit', (e) => {
+        const resumeId = document.getElementById('resume_id').value;
+        if(!resumeId) {
+            e.preventDefault();
+            alert("Please choose a resume first.");
+            return;
+        }
+        
+        // Show loading state
+        secPredefined.classList.add('hidden');
+        secCustom.classList.add('hidden');
+        document.getElementById('resume_id').parentElement.parentElement.classList.add('hidden');
+        btnPredefined.parentElement.parentElement.classList.add('hidden');
+        formActions.classList.add('hidden');
+        loadingState.classList.remove('hidden');
+    });
+</script>
+{% endblock %}

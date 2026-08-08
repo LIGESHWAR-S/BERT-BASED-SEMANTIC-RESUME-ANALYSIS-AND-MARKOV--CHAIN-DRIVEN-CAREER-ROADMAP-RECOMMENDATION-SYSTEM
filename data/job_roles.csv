@@ -1,0 +1,26 @@
+job_role,industry,required_skills,preferred_skills,minimum_experience
+Software Developer,Software Development,Python|JavaScript|Git|REST API,Docker|PostgreSQL|Django|React,2
+Junior Developer,Software Development,HTML|CSS|JavaScript|Git,React|Python|SQL,0
+Senior Developer,Software Development,Python|JavaScript|REST API|Docker|Git,Kubernetes|AWS|PostgreSQL|Django|React|Redis,5
+Data Scientist,Data Science,Python|SQL|Machine Learning|Pandas|NumPy,Deep Learning|Natural Language Processing|PyTorch|Scikit-Learn|Apache Spark,3
+Data Analyst,Data Analytics,SQL|Microsoft Excel|Power BI|Python,Tableau|Pandas|Communication,1
+Cloud Engineer,Cloud Computing,AWS|Linux|Docker|Terraform,Kubernetes|Azure|Google Cloud Platform|Python,3
+Cybersecurity Analyst,Cybersecurity,Network Security|Linux|Cryptography,Penetration Testing|Python|Communication,2
+UI/UX Designer,UI/UX,Figma|Communication|Teamwork,Adobe XD|Sketch|HTML|CSS,2
+Product Manager,Project Management,Product Management|Agile|Communication|Leadership,Project Management|Jira|SQL,3
+Digital Marketing Specialist,Digital Marketing,Search Engine Optimization|Google Analytics|Social Media Marketing,Copywriting|Communication|Figma,1
+DevOps Engineer,Cloud Computing,Docker|Kubernetes|Linux|Git|Jenkins,AWS|Terraform|Ansible|Python,3
+Tech Lead,Software Development,Python|JavaScript|Docker|Git|Leadership|Communication,Kubernetes|AWS|PostgreSQL|Django|React|Redis|Project Management,8
+Engineering Manager,Software Development,Leadership|Communication|Project Management|Agile,Product Management|Git|SQL,10
+Architect,Software Development,AWS|Azure|Docker|Kubernetes|REST API,Terraform|PostgreSQL|Redis|Network Security,10
+Junior Data Analyst,Data Analytics,SQL|Microsoft Excel|Communication,Python|Power BI|Tableau,0
+Senior Data Analyst,Data Analytics,SQL|Microsoft Excel|Power BI|Tableau|Python|Pandas,Communication|Leadership|Apache Spark,5
+Senior Data Scientist,Data Science,Python|SQL|Machine Learning|Deep Learning|Pandas|NumPy,PyTorch|Natural Language Processing|Apache Spark|Leadership,6
+Lead Data Scientist,Data Science,Python|SQL|Machine Learning|Deep Learning|Leadership|Communication,PyTorch|Natural Language Processing|Apache Spark|Project Management,8
+Cloud Support Engineer,Cloud Computing,Linux|AWS|Communication|Problem Solving,Azure|Docker|Git,1
+Senior Cloud Engineer,Cloud Computing,AWS|Azure|Docker|Kubernetes|Terraform|Linux,Google Cloud Platform|Python|Network Security|Leadership,6
+Senior UI/UX Designer,UI/UX,Figma|Adobe XD|Communication|Teamwork|Leadership,Sketch|HTML|CSS|Product Management,5
+Product Owner,Project Management,Agile|Product Management|Communication|Teamwork,Jira|Project Management|SQL,2
+Senior Product Manager,Project Management,Product Management|Agile|Leadership|Communication|Project Management,Jira|SQL|Tableau,6
+Digital Marketing Manager,Digital Marketing,Search Engine Optimization|Google Analytics|Social Media Marketing|Leadership|Communication,Copywriting|Figma|Project Management,5
+Intern,Software Development,Python|HTML|CSS|Git,JavaScript|SQL|Communication,0

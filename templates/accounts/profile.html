@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile | CareerChain AI{% endblock %}
+{% block page_title %}User Profile Settings{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="premium-card p-6 sm:p-8 rounded-xl shadow-md relative overflow-hidden bg-white border-slate-200">
+        
+        <div class="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-slate-100 relative">
+            <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center border border-slate-250 shrink-0">
+                <i class="fa-solid fa-user-tie text-2xl text-slate-500"></i>
+            </div>
+            <div class="text-center sm:text-left">
+                <h2 class="text-xl font-bold text-slate-800 font-display">{{ user.username }}</h2>
+                <p class="text-slate-500 text-xs mt-1">{{ user.email }}</p>
+                <p class="text-[11px] text-slate-400 mt-2">Member since {{ user.date_joined|date:"F Y" }}</p>
+            </div>
+        </div>
+        
+        <form method="POST" action="{% url 'profile' %}" class="mt-6 space-y-5 relative">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label for="current_role" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Current Career Role</label>
+                    <input id="current_role" name="current_role" type="text" value="{{ profile.current_role|default_if_none:'' }}" class="appearance-none rounded-lg relative block w-full px-4 py-2.5 border border-slate-200 bg-slate-50 text-slate-850 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs font-semibold transition-all" placeholder="e.g. Software Developer">
+                </div>
+                <div>
+                    <label for="experience_years" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Total Experience (Years)</label>
+                    <input id="experience_years" name="experience_years" type="number" step="0.1" min="0" value="{{ profile.experience_years|floatformat:1 }}" class="appearance-none rounded-lg relative block w-full px-4 py-2.5 border border-slate-200 bg-slate-50 text-slate-850 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs font-semibold transition-all" placeholder="e.g. 2.5">
+                </div>
+            </div>
+
+            <div>
+                <label for="bio" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Short Bio / Professional Summary</label>
+                <textarea id="bio" name="bio" rows="4" class="appearance-none rounded-lg relative block w-full px-4 py-2.5 border border-slate-200 bg-slate-50 text-slate-850 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs font-semibold transition-all" placeholder="Tell us about your professional background...">{{ profile.bio|default_if_none:'' }}</textarea>
+            </div>
+
+            <div class="flex justify-end gap-2.5 pt-4 border-t border-slate-100">
+                <a href="{% url 'dashboard_home' %}" class="px-4 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-bold text-xs transition">Cancel</a>
+                <button type="submit" class="px-4 py-2 rounded-lg text-white bg-indigo-600 hover:bg-indigo-500 font-bold text-xs transition shadow-sm active:scale-[0.98]">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

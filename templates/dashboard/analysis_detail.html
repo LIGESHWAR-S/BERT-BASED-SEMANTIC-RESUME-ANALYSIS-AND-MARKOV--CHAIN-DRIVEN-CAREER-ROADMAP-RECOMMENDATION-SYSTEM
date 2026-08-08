@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+
+{% block title %}Match Report | CareerChain AI{% endblock %}
+{% block page_title %}Evaluation Matching Report{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-6xl mx-auto">
+
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 pb-4">
+        <div>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Match Analysis Result</span>
+            <h2 class="text-xl font-bold text-slate-800 font-display mt-1">{{ analysis.job_description.title }}</h2>
+            <p class="text-xs text-slate-500 mt-1">Profile: <span class="text-slate-700 font-semibold">{{ analysis.resume.filename }}</span> | Evaluated on {{ analysis.created_at|date:"F d, Y \a\t H:i" }}</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'match_create' %}" class="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 font-bold rounded-lg text-xs transition">
+                <i class="fa-solid fa-rotate-left mr-1.5"></i> Run Another Match
+            </a>
+            <a href="{% url 'career_recommend' %}?resume_id={{ analysis.resume.id }}&current_role={{ analysis.job_description.title }}" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg text-xs transition shadow-sm">
+                <i class="fa-solid fa-route mr-1.5"></i> Launch Career Predictor
+            </a>
+        </div>
+    </div>
+
+    <!-- Top Grid: Suitability Score and Radar Chart -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Score Circular Gauge and Explanation -->
+        <div class="premium-card p-6 rounded-xl shadow-sm flex flex-col justify-between relative overflow-hidden bg-white border-slate-200">
+            <div>
+                <h3 class="font-bold text-slate-700 text-sm font-display border-b border-slate-100 pb-3 mb-4">Overall Suitability</h3>
+                
+                <!-- Circular Score -->
+                <div class="flex flex-col items-center py-4">
+                    <div class="relative w-36 h-36 flex items-center justify-center">
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                            <circle class="text-slate-100" stroke-width="8" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50"/>
+                            <circle class="
+                                {% if analysis.overall_score >= 80 %}text-emerald-500{% elif analysis.overall_score >= 55 %}text-amber-500{% else %}text-rose-500{% endif %}
+                                transition-all duration-1000 ease-out" 
+                                stroke-width="8" 
+                                stroke-dasharray="251.2" 
+                                stroke-dashoffset="{{ dash_offset }}" 
+                                stroke-linecap="round" 
+                                stroke="currentColor" 
+                                fill="transparent" 
+                                r="40" 
+                                cx="50" 
+                                cy="50"/>
+                        </svg>
+                        <div class="absolute flex flex-col items-center">
+                            <span class="text-3xl font-extrabold text-slate-800 font-display">{{ analysis.overall_score|floatformat:1 }}%</span>
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Match Score</span>
+                        </div>
+                    </div>
+                    
+                    <span class="mt-4 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider
+                        {% if analysis.overall_score >= 80 %}
+                            bg-emerald-50 border border-emerald-200 text-emerald-700
+                        {% elif analysis.overall_score >= 55 %}
+                            bg-amber-50 border border-amber-200 text-amber-750
+                        {% else %}
+                            bg-rose-50 border border-rose-200 text-rose-700
+                        {% endif %}
+                    ">
+                        {% if analysis.overall_score >= 80 %}Strong Match{% elif analysis.overall_score >= 55 %}Moderate Match{% else %}Weak Match{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-slate-100 bg-slate-50 p-4 rounded-xl">
+                <span class="block text-[9px] font-bold text-indigo-600 uppercase tracking-wider mb-1.5"><i class="fa-solid fa-comment-dots mr-1"></i>Explainable NLP Summary</span>
+                <p class="text-xs text-slate-600 leading-relaxed">{{ analysis.explanation }}</p>
+            </div>
+        </div>
+
+        <!-- Component Scores Breakdown -->
+        <div class="premium-card p-6 rounded-xl shadow-sm flex flex-col justify-between bg-white border-slate-200">
+            <div>
+                <h3 class="font-bold text-slate-700 text-sm font-display border-b border-slate-100 pb-3 mb-4">Suitability Dimensions</h3>
+                
+                <div class="space-y-4">
+                    <!-- Semantic -->
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-slate-500">BERT Semantic Similarity</span>
+                            <span class="text-slate-800">{{ analysis.semantic_score|floatformat:0 }}%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 border border-slate-200 overflow-hidden">
+                            <div class="bg-indigo-500 h-full rounded-full" style="width: {{ analysis.semantic_score }}%"></div>
+                        </div>
+                    </div>
+                    <!-- Skills -->
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-slate-500">Technical Skills Match</span>
+                            <span class="text-slate-800">{{ analysis.skill_score|floatformat:0 }}%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 border border-slate-200 overflow-hidden">
+                            <div class="bg-violet-500 h-full rounded-full" style="width: {{ analysis.skill_score }}%"></div>
+                        </div>
+                    </div>
+                    <!-- Experience -->
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-slate-500">Experience Threshold</span>
+                            <span class="text-slate-800">{{ analysis.experience_score|floatformat:0 }}%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 border border-slate-200 overflow-hidden">
+                            <div class="bg-emerald-500 h-full rounded-full" style="width: {{ analysis.experience_score }}%"></div>
+                        </div>
+                    </div>
+                    <!-- Education -->
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-slate-500">Education Degree Alignment</span>
+                            <span class="text-slate-800">{{ analysis.education_score|floatformat:0 }}%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 border border-slate-200 overflow-hidden">
+                            <div class="bg-amber-500 h-full rounded-full" style="width: {{ analysis.education_score }}%"></div>
+                        </div>
+                    </div>
+                    <!-- Projects -->
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-slate-500">Project & Cert Relevance</span>
+                            <span class="text-slate-800">{{ analysis.project_score|floatformat:0 }}%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 border border-slate-200 overflow-hidden">
+                            <div class="bg-sky-500 h-full rounded-full" style="width: {{ analysis.project_score }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="text-[10px] text-slate-400 leading-normal mt-4"><i class="fa-solid fa-circle-info mr-1 text-slate-350"></i>Scores are evaluated using SBERT (`all-MiniLM-L6-v2`) semantic embeddings, and matching algorithms with predefined weights.</p>
+        </div>
+
+        <!-- Radar Chart Visualizer -->
+        <div class="premium-card p-6 rounded-xl shadow-sm flex flex-col justify-between bg-white border-slate-200">
+            <h3 class="font-bold text-slate-700 text-sm font-display border-b border-slate-100 pb-3 mb-2">Overlay Radar Analysis</h3>
+            
+            <div class="flex-1 flex items-center justify-center min-h-[220px]">
+                <canvas id="radarChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Skill Gap Engine Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Matched Skills Badge Box -->
+        <div class="premium-card p-6 rounded-xl shadow-sm flex flex-col h-fit bg-white border-slate-200">
+            <h3 class="font-bold text-emerald-600 text-sm font-display border-b border-slate-100 pb-3 mb-4 flex items-center justify-between">
+                <span>Matched Skills</span>
+                <span class="text-[10px] px-2.5 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-600 rounded-full font-bold">{{ matched_skills|length }}</span>
+            </h3>
+            {% if matched_skills %}
+            <div class="flex flex-wrap gap-1.5">
+                {% for sg in matched_skills %}
+                <span class="px-2.5 py-1 bg-emerald-50/50 border border-emerald-200/50 rounded-lg text-xs text-emerald-700 font-medium">
+                    <i class="fa-solid fa-check mr-1 text-[9px]"></i>{{ sg.skill.name }}
+                </span>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-slate-400 text-xs italic py-4">No overlapping skills matched between profile and job description.</p>
+            {% endif %}
+        </div>
+
+        <!-- Critical Missing Skills -->
+        <div class="premium-card p-6 rounded-xl shadow-sm flex flex-col h-fit bg-white border-slate-200">
+            <h3 class="font-bold text-rose-600 text-sm font-display border-b border-slate-100 pb-3 mb-4 flex items-center justify-between">
+                <span>Critical Gaps</span>
+                <span class="text-[10px] px-2.5 py-0.5 bg-rose-50 border border-rose-200 text-rose-600 rounded-full font-bold">{{ missing_skills|length }}</span>
+            </h3>
+            {% if missing_skills %}
+            <div class="space-y-3">
+                {% for sg in missing_skills %}
+                <div class="p-3 bg-rose-50 border border-rose-100 rounded-lg text-xs space-y-1.5">
+                    <div class="flex justify-between items-center gap-2">
+                        <span class="font-bold text-rose-800">{{ sg.skill.name }}</span>
+                        <span class="text-[9px] font-bold px-1.5 py-0.5 bg-rose-100 text-rose-700 rounded uppercase tracking-wider shrink-0">
+                            {{ sg.priority }}
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 leading-relaxed">{{ sg.explanation }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-slate-400 text-xs italic py-4">You possess all core required skills for this job role! Outstanding match.</p>
+            {% endif %}
+        </div>
+
+        <!-- Recommended Skills / Secondary Gaps -->
+        <div class="premium-card p-6 rounded-xl shadow-sm flex flex-col h-fit bg-white border-slate-200">
+            <h3 class="font-bold text-indigo-600 text-sm font-display border-b border-slate-100 pb-3 mb-4 flex items-center justify-between">
+                <span>Recommended Additions</span>
+                <span class="text-[10px] px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-600 rounded-full font-bold">{{ recommended_skills|length }}</span>
+            </h3>
+            {% if recommended_skills %}
+            <div class="space-y-3">
+                {% for sg in recommended_skills %}
+                <div class="p-3 bg-indigo-50/50 border border-indigo-100 rounded-lg text-xs space-y-1.5">
+                    <div class="flex justify-between items-center gap-2">
+                        <span class="font-bold text-indigo-800">{{ sg.skill.name }}</span>
+                        <span class="text-[9px] font-bold px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded uppercase tracking-wider shrink-0">
+                            {{ sg.priority }}
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-slate-550 leading-relaxed">{{ sg.explanation }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-slate-400 text-xs italic py-4">No preferred skills are currently missing from your resume.</p>
+            {% endif %}
+        </div>
+
+    </div>
+
+    {% if analysis.overall_score >= 65 %}
+    <!-- Job Openings & Recommendations -->
+    <div class="premium-card p-6 rounded-xl shadow-sm bg-white border-slate-200 mt-6 border-t-4 border-t-indigo-500">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-4 mb-4">
+            <div>
+                <h3 class="font-bold text-slate-800 text-sm font-display flex items-center gap-2">
+                    <i class="fa-solid fa-briefcase text-indigo-500"></i>
+                    Job Openings & Recommendations
+                </h3>
+                <p class="text-xs text-slate-500 mt-1">Outstanding Suitability Score: <strong>{{ analysis.overall_score|floatformat:1 }}%</strong>! Pre-compiled search queries are ready for <strong>{{ analysis.job_description.title }}</strong>.</p>
+            </div>
+            
+            <span class="px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-600 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0">
+                <i class="fa-solid fa-star mr-1"></i> Match &gt;65% - Highly Recommended to Apply
+            </span>
+        </div>
+        
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <a href="https://www.linkedin.com/jobs/search/?keywords={{ analysis.job_description.title|urlencode }}" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-[#0a66c2]/5 hover:bg-[#0a66c2]/10 border border-[#0a66c2]/20 hover:border-[#0a66c2]/40 text-[#0a66c2] rounded-lg text-xs font-bold transition shadow-sm">
+                <i class="fa-brands fa-linkedin text-base"></i> LinkedIn Jobs
+            </a>
+            
+            <a href="https://www.naukri.com/jobs-in-india?k={{ analysis.job_description.title|urlencode }}" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-[#091e42]/5 hover:bg-[#091e42]/10 border border-[#091e42]/20 hover:border-[#091e42]/40 text-[#091e42] rounded-lg text-xs font-bold transition shadow-sm">
+                <i class="fa-solid fa-graduation-cap text-base"></i> Naukri.com
+            </a>
+            
+            <a href="https://www.glassdoor.com/Job/jobs.htm?sc.keyword={{ analysis.job_description.title|urlencode }}" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-[#0caa41]/5 hover:bg-[#0caa41]/10 border border-[#0caa41]/20 hover:border-[#0caa41]/40 text-[#0caa41] rounded-lg text-xs font-bold transition shadow-sm">
+                <i class="fa-solid fa-door-open text-base"></i> Glassdoor Jobs
+            </a>
+            
+            <a href="https://www.indeed.com/jobs?q={{ analysis.job_description.title|urlencode }}" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-[#2164f3]/5 hover:bg-[#2164f3]/10 border border-[#2164f3]/20 hover:border-[#2164f3]/40 text-[#2164f3] rounded-lg text-xs font-bold transition shadow-sm">
+                <i class="fa-solid fa-magnifying-glass text-base"></i> Indeed Jobs
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <!-- Career Roadmap Skill Building & PDF Download -->
+    <div class="premium-card p-6 rounded-xl shadow-sm bg-white border-slate-200 mt-6 border-l-4 border-l-amber-500">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+            <div class="space-y-1">
+                <h3 class="font-bold text-slate-800 text-sm font-display flex items-center gap-2">
+                    <i class="fa-solid fa-route text-amber-500"></i>
+                    Career Roadmap & Skill-Building Recommendation
+                </h3>
+                <p class="text-xs text-slate-500 mt-1">Your suitability score is <strong>{{ analysis.overall_score|floatformat:1 }}%</strong> (below the 65% target threshold). We recommend downloading our AI Career Recommendation report to map and bridge your skill gaps.</p>
+            </div>
+            
+            <div class="shrink-0 flex gap-2 w-full sm:w-auto">
+                <a href="{% url 'match_recommend_pdf' analysis.id %}" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg text-xs transition shadow-sm active:scale-[0.98] cursor-pointer">
+                    <i class="fa-solid fa-file-pdf"></i> Download PDF Report
+                </a>
+                <a href="{% url 'career_recommend' %}?resume_id={{ analysis.resume.id }}&current_role={{ analysis.job_description.title }}" class="flex-1 sm:flex-initial flex items-center justify-center px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 font-bold rounded-lg text-xs transition">
+                    Interactive Roadmap
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- JSON payload mapping for Chart.js -->
+<script id="chart-data" type="application/json">
+    {
+        "labels": ["Semantic Score", "Skills Match", "Experience", "Education", "Projects & Certs"],
+        "values": [
+            {{ analysis.semantic_score|floatformat:1 }},
+            {{ analysis.skill_score|floatformat:1 }},
+            {{ analysis.experience_score|floatformat:1 }},
+            {{ analysis.education_score|floatformat:1 }},
+            {{ analysis.project_score|floatformat:1 }}
+        ]
+    }
+</script>
+
+<script>
+    // Load chart data
+    const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+    
+    // Initialize Radar Chart
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    
+    // Configuration options
+    Chart.defaults.color = '#64748b';
+    Chart.defaults.font.family = 'Inter';
+    
+    new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Candidate Strength',
+                data: chartData.values,
+                backgroundColor: 'rgba(99, 102, 241, 0.12)',
+                borderColor: '#6366f1',
+                borderWidth: 2,
+                pointBackgroundColor: '#6366f1',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#6366f1'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    angleLines: {
+                        color: '#f1f5f9'
+                    },
+                    grid: {
+                        color: '#e2e8f0'
+                    },
+                    pointLabels: {
+                        font: {
+                            size: 10,
+                            weight: '600'
+                        },
+                        color: '#475569'
+                    },
+                    ticks: {
+                        backdropColor: 'transparent',
+                        color: '#64748b',
+                        font: {
+                            size: 8
+                        },
+                        stepSize: 20
+                    },
+                    min: 0,
+                    max: 100
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

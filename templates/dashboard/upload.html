@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Resume | CareerChain AI{% endblock %}
+{% block page_title %}Upload Resume{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="premium-card p-8 rounded-xl shadow-md relative overflow-hidden bg-white border-slate-200">
+        
+        <div class="text-center pb-6 border-b border-slate-100 mb-6">
+            <h2 class="text-xl font-bold text-slate-800 font-display">Resume Processing Pipeline</h2>
+            <p class="text-slate-500 text-xs mt-1">Upload your resume to extract text, segment sections, catalog skills, and generate SBERT semantic embeddings.</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" action="{% url 'resume_upload' %}" id="upload-form" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Drag and Drop Area -->
+            <div id="drop-zone" class="border-2 border-dashed border-slate-200 hover:border-indigo-400 bg-slate-50/50 rounded-xl p-10 flex flex-col items-center justify-center cursor-pointer transition-all relative group">
+                <input type="file" name="resume_file" id="resume_file" class="hidden" accept=".pdf,.docx,.txt" required>
+                
+                <div class="w-12 h-12 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 mb-4 group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
+                </div>
+                
+                <p class="text-xs font-bold text-slate-700" id="file-label-main">Drag and drop your resume file here</p>
+                <p class="text-[11px] text-slate-400 mt-1">or click to browse from folders</p>
+                
+                <div class="mt-5 flex justify-center gap-3 text-[10px] text-slate-500 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+                    <span><i class="fa-solid fa-file-pdf text-red-500 mr-1"></i>PDF</span>
+                    <span><i class="fa-solid fa-file-word text-blue-500 mr-1"></i>DOCX</span>
+                    <span><i class="fa-solid fa-file-lines text-slate-400 mr-1"></i>TXT</span>
+                </div>
+            </div>
+
+            <!-- File Info Preview (hidden initially) -->
+            <div id="file-info" class="hidden p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <div class="w-10 h-10 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0" id="file-type-icon">
+                        <i class="fa-solid fa-file text-indigo-500"></i>
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-bold text-slate-700 truncate" id="file-name">filename.pdf</p>
+                        <p class="text-[10px] text-slate-400" id="file-size">0.0 MB</p>
+                    </div>
+                </div>
+                <button type="button" id="remove-file" class="text-slate-400 hover:text-red-500 transition-colors p-1.5">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+
+            <!-- Validation alerts/rules -->
+            <div class="p-4 rounded-lg border border-indigo-100 bg-indigo-50/40 text-indigo-800 text-[11px] leading-relaxed space-y-1">
+                <p class="font-bold uppercase tracking-wider text-[9px] text-indigo-700 mb-1">Pipeline Specifications:</p>
+                <p><i class="fa-solid fa-circle-check text-indigo-500 mr-1"></i>Maximum file upload size is <strong>5MB</strong>.</p>
+                <p><i class="fa-solid fa-circle-check text-indigo-500 mr-1"></i>Document must contain readable text (ASCII/Unicode format).</p>
+                <p><i class="fa-solid fa-circle-check text-indigo-500 mr-1"></i>Skill extraction maps matches directly to standard taxonomy definitions.</p>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex justify-end gap-2.5 pt-4 border-t border-slate-100" id="form-actions">
+                <a href="{% url 'dashboard_home' %}" class="px-4 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-semibold text-xs transition">Cancel</a>
+                <button type="submit" id="submit-btn" class="px-4 py-2 rounded-lg text-white bg-indigo-600 hover:bg-indigo-500 font-bold text-xs transition shadow-sm active:scale-[0.98] cursor-pointer">
+                    Process Resume
+                </button>
+            </div>
+            
+            <!-- Loading State -->
+            <div id="loading-state" class="hidden flex flex-col items-center justify-center py-6 text-center">
+                <svg class="animate-spin -ml-1 mr-3 h-7 w-7 text-indigo-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-xs font-bold text-slate-700">Executing Natural Language Pipeline...</p>
+                <p class="text-[10px] text-slate-400 mt-1 max-w-xs leading-relaxed">Extracting text, identifying sections, parsing skills, and generating SBERT embeddings. This takes about 5-10 seconds.</p>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('resume_file');
+    const fileLabelMain = document.getElementById('file-label-main');
+    const fileInfo = document.getElementById('file-info');
+    const fileName = document.getElementById('file-name');
+    const fileSize = document.getElementById('file-size');
+    const fileIcon = document.getElementById('file-type-icon');
+    const removeFile = document.getElementById('remove-file');
+    const uploadForm = document.getElementById('upload-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const formActions = document.getElementById('form-actions');
+    const loadingState = document.getElementById('loading-state');
+    
+    // Drag events
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        e.preventDefault();
+        dropZone.classList.add('border-indigo-500', 'bg-indigo-50/20');
+    }
+
+    function unhighlight(e) {
+        e.preventDefault();
+        dropZone.classList.remove('border-indigo-500', 'bg-indigo-50/20');
+    }
+
+    dropZone.addEventListener('drop', handleDrop, false);
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if(files.length > 0) {
+            fileInput.files = files;
+            updateFileInfo(files[0]);
+        }
+    }
+
+    fileInput.addEventListener('change', (e) => {
+        if(fileInput.files.length > 0) {
+            updateFileInfo(fileInput.files[0]);
+        }
+    });
+
+    function updateFileInfo(file) {
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        fileName.innerText = file.name;
+        fileSize.innerText = `${sizeMB} MB`;
+        
+        const ext = file.name.split('.').pop().toLowerCase();
+        let iconHtml = '<i class="fa-solid fa-file text-indigo-500"></i>';
+        if(ext === 'pdf') {
+            iconHtml = '<i class="fa-solid fa-file-pdf text-red-500 text-lg"></i>';
+        } else if(['docx', 'doc'].includes(ext)) {
+            iconHtml = '<i class="fa-solid fa-file-word text-blue-500 text-lg"></i>';
+        } else if(ext === 'txt') {
+            iconHtml = '<i class="fa-solid fa-file-lines text-slate-400 text-lg"></i>';
+        }
+        fileIcon.innerHTML = iconHtml;
+        
+        dropZone.classList.add('hidden');
+        fileInfo.classList.remove('hidden');
+    }
+
+    removeFile.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileInput.value = '';
+        dropZone.classList.remove('hidden');
+        fileInfo.classList.add('hidden');
+    });
+
+    uploadForm.addEventListener('submit', (e) => {
+        if(fileInput.files.length === 0) {
+            e.preventDefault();
+            alert("Please select a file first.");
+            return;
+        }
+        
+        // Switch to loading state
+        dropZone.classList.add('hidden');
+        fileInfo.classList.add('hidden');
+        formActions.classList.add('hidden');
+        loadingState.classList.remove('hidden');
+    });
+</script>
+{% endblock %}

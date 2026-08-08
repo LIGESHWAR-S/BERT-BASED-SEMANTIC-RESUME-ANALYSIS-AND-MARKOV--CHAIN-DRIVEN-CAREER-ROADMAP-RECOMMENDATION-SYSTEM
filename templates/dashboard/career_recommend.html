@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Predict Career Path | CareerChain AI{% endblock %}
+{% block page_title %}Markov Career Roadmap Predictor{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="premium-card p-6 sm:p-8 rounded-xl shadow-md relative overflow-hidden bg-white border-slate-200">
+        
+        <div class="text-center pb-6 border-b border-slate-100 mb-6">
+            <h2 class="text-xl font-bold text-slate-800 font-display">Markov Chain Career Recommendation</h2>
+            <p class="text-slate-500 text-xs mt-1">Determine the next optimal career moves and skill development sequences using stochastic transition models built from historical job profiles.</p>
+        </div>
+
+        <form method="POST" action="{% url 'career_recommend' %}" id="career-form" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- 1. Select Resume -->
+            <div>
+                <label for="resume_id" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">1. Select Candidate Resume Profile</label>
+                <div class="relative">
+                    <select name="resume_id" id="resume_id" required class="appearance-none rounded-lg block w-full px-4 py-2.5 border border-slate-200 bg-slate-50 text-slate-850 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs font-semibold transition-all cursor-pointer">
+                        <option value="">-- Choose a resume --</option>
+                        {% for res in resumes %}
+                            <option value="{{ res.id }}" {% if request.GET.resume_id|add:"0" == res.id %}selected{% endif %}>{{ res.filename }} (Parsed {{ res.resume_skills.count }} skills)</option>
+                        {% endfor %}
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                    </div>
+                </div>
+                {% if not resumes %}
+                <p class="text-xs text-red-550 mt-2">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> You need to upload a resume first!
+                    <a href="{% url 'resume_upload' %}" class="underline text-indigo-600 font-semibold hover:text-indigo-500 ml-1">Upload Resume</a>
+                </p>
+                {% endif %}
+            </div>
+
+            <!-- 2. Select/Correct Current Role -->
+            <div>
+                <label for="current_role" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">2. Confirm / Correct Your Current Role</label>
+                <p class="text-[11px] text-slate-450 mb-3">The model calculates career transition probabilities from this state. Correct this if your resume parses it incorrectly.</p>
+                
+                <div class="relative">
+                    <select name="current_role" id="current_role" class="appearance-none rounded-lg block w-full px-4 py-2.5 border border-slate-200 bg-slate-50 text-slate-850 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs font-semibold transition-all cursor-pointer">
+                        {% for state in states %}
+                            <option value="{{ state.name }}" {% if user.profile.current_role == state.name %}selected{% endif %}>{{ state.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Validation alerts/rules -->
+            <div class="p-4 rounded-lg border border-indigo-100 bg-indigo-50/40 text-indigo-850 text-[11px] leading-relaxed space-y-1">
+                <p class="font-bold uppercase tracking-wider text-[9px] text-indigo-700 mb-1">Career Scoring Formulation:</p>
+                <p><i class="fa-solid fa-calculator text-indigo-500 mr-1.5"></i>Career Rank is computed as: <strong>50% Markov Probability + 30% Skill Compatibility + 20% BERT Similarity</strong>.</p>
+                <p><i class="fa-solid fa-clock text-indigo-500 mr-1.5"></i>Calculates multi-step nodes for a 3-step future path mapping.</p>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex justify-end gap-2.5 pt-4 border-t border-slate-100" id="form-actions">
+                <a href="{% url 'dashboard_home' %}" class="px-4 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-bold text-xs transition">Cancel</a>
+                <button type="submit" id="submit-btn" class="px-4 py-2 rounded-lg text-white bg-indigo-600 hover:bg-indigo-500 font-bold text-xs transition shadow-sm active:scale-[0.98] cursor-pointer">
+                    Predict Career Roadmap
+                </button>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading-state" class="hidden flex flex-col items-center justify-center py-6 text-center">
+                <svg class="animate-spin -ml-1 mr-3 h-7 w-7 text-indigo-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-xs font-bold text-slate-700">Executing Markov Chain Predictions...</p>
+                <p class="text-[10px] text-slate-400 mt-1 max-w-xs leading-relaxed">Building transition probabilities, filtering nodes, and mapping learning tracks. This will load shortly.</p>
+            </div>
+            
+        </form>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById('career-form');
+    const actions = document.getElementById('form-actions');
+    const loading = document.getElementById('loading-state');
+    
+    form.addEventListener('submit', (e) => {
+        const resumeId = document.getElementById('resume_id').value;
+        if(!resumeId) {
+            e.preventDefault();
+            alert("Please select a resume profile.");
+            return;
+        }
+        
+        document.getElementById('resume_id').parentElement.classList.add('hidden');
+        document.getElementById('current_role').parentElement.classList.add('hidden');
+        actions.classList.add('hidden');
+        loading.classList.remove('hidden');
+    });
+</script>
+{% endblock %}

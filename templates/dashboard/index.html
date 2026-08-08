@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | CareerChain AI{% endblock %}
+{% block page_title %}Workspace Overview{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-6xl mx-auto">
+
+    <!-- Welcome Card -->
+    <div class="premium-card rounded-xl p-6 relative overflow-hidden bg-white border-slate-200">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div class="space-y-1.5">
+                <span class="text-[9px] font-bold px-2.5 py-0.5 bg-slate-100 border border-slate-200 text-slate-500 rounded-md uppercase tracking-wider">WORKSPACE ACTIVE</span>
+                <h2 class="text-xl font-bold text-slate-800 font-display mt-1">Hello, {{ user.username }}</h2>
+                <p class="text-xs text-slate-500 max-w-xl leading-relaxed">Your resume matching, NLP skills extractors, and Markov Chain career advisor models are active. Upload your resume to map your career trajectory.</p>
+            </div>
+            
+            <div class="flex gap-2.5 shrink-0">
+                <a href="{% url 'resume_upload' %}" class="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-white bg-indigo-600 hover:bg-indigo-500 transition-all shadow-sm active:scale-[0.98]">
+                    <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Upload CV
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Card 1: Resumes -->
+        <div class="premium-card p-5 rounded-xl flex items-center justify-between shadow-sm relative group bg-white border-slate-200">
+            <div>
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Resumes Uploaded</p>
+                <h3 class="text-2xl font-bold mt-1 text-slate-800 font-display">{{ total_resumes }}</h3>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 group-hover:border-slate-200 transition-all duration-200">
+                <i class="fa-solid fa-file-lines text-sm text-indigo-500"></i>
+            </div>
+        </div>
+
+        <!-- Card 2: Matches -->
+        <div class="premium-card p-5 rounded-xl flex items-center justify-between shadow-sm relative group bg-white border-slate-200">
+            <div>
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Job Matches Done</p>
+                <h3 class="text-2xl font-bold mt-1 text-slate-800 font-display">{{ total_analyses }}</h3>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 group-hover:border-slate-200 transition-all duration-200">
+                <i class="fa-solid fa-crosshairs text-sm text-indigo-500"></i>
+            </div>
+        </div>
+
+        <!-- Card 3: Current Role -->
+        <div class="premium-card p-5 rounded-xl flex items-center justify-between shadow-sm relative group bg-white border-slate-200">
+            <div>
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Current Career Role</p>
+                <h3 class="text-xs font-bold mt-2.5 text-indigo-600 truncate max-w-[130px] font-display">{{ user.profile.current_role|default:"Not Configured" }}</h3>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 group-hover:border-slate-200 transition-all duration-200">
+                <i class="fa-solid fa-briefcase text-sm text-indigo-500"></i>
+            </div>
+        </div>
+
+        <!-- Card 4: Experience -->
+        <div class="premium-card p-5 rounded-xl flex items-center justify-between shadow-sm relative group bg-white border-slate-200">
+            <div>
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Years of Experience</p>
+                <h3 class="text-2xl font-bold mt-1 text-slate-800 font-display">{{ user.profile.experience_years|floatformat:1 }} Yrs</h3>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 group-hover:border-slate-200 transition-all duration-200">
+                <i class="fa-solid fa-business-time text-sm text-indigo-500"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left lists (width 2/3) -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Resumes List -->
+            <div class="premium-card rounded-xl overflow-hidden shadow-sm bg-white border-slate-200">
+                <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <h3 class="font-bold text-slate-700 text-xs font-display uppercase tracking-wider"><i class="fa-solid fa-file-pdf text-indigo-500 mr-2"></i>My Parsed Resumes</h3>
+                    <a href="{% url 'resume_upload' %}" class="text-[11px] font-bold text-indigo-600 hover:text-indigo-500 transition-colors flex items-center gap-1">
+                        <i class="fa-solid fa-plus text-[9px]"></i> Upload New
+                    </a>
+                </div>
+                <div class="p-5">
+                    {% if resumes %}
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="text-slate-400 border-b border-slate-100 pb-2">
+                                    <th class="pb-2.5 font-bold uppercase tracking-wider">Resume File</th>
+                                    <th class="pb-2.5 font-bold uppercase tracking-wider">Date Processed</th>
+                                    <th class="pb-2.5 font-bold uppercase tracking-wider">Skills Catalog</th>
+                                    <th class="pb-2.5 text-right font-bold uppercase tracking-wider">Options</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                {% for res in resumes|slice:":5" %}
+                                <tr class="hover:bg-slate-50/50 transition-colors">
+                                    <td class="py-3 font-semibold text-slate-700 truncate max-w-[180px]">{{ res.filename }}</td>
+                                    <td class="py-3 text-slate-500">{{ res.uploaded_at|date:"M d, Y" }}</td>
+                                    <td class="py-3">
+                                        <span class="px-2.5 py-0.5 bg-slate-50 border border-slate-200 text-slate-500 text-[10px] rounded-md font-semibold">
+                                            {{ res.resume_skills.count }} Skills
+                                        </span>
+                                    </td>
+                                    <td class="py-3 text-right">
+                                        <div class="flex justify-end gap-1.5">
+                                            <a href="{% url 'resume_detail' res.id %}" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-md font-bold transition text-[10px]">
+                                                View
+                                            </a>
+                                            <a href="{% url 'match_create' %}?resume_id={{ res.id }}" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 rounded-md font-bold transition text-[10px]">
+                                                Match
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-8 text-slate-400 border border-dashed border-slate-200 rounded-lg bg-slate-50/30">
+                        <i class="fa-solid fa-file-circle-xmark text-3xl mb-2 text-slate-300"></i>
+                        <p class="text-xs font-medium">No resumes uploaded yet. Run the extraction pipeline to start.</p>
+                        <a href="{% url 'resume_upload' %}" class="mt-3 inline-block px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-[10px] font-bold text-white rounded-md transition uppercase tracking-wider shadow-sm">
+                            Upload Resume
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Matches List -->
+            <div class="premium-card rounded-xl overflow-hidden shadow-sm bg-white border-slate-200">
+                <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <h3 class="font-bold text-slate-700 text-xs font-display uppercase tracking-wider"><i class="fa-solid fa-crosshairs text-indigo-500 mr-2"></i>Job Fit Evaluations</h3>
+                    <a href="{% url 'match_create' %}" class="text-[11px] font-bold text-indigo-600 hover:text-indigo-500 transition-colors flex items-center gap-1">
+                        <i class="fa-solid fa-plus text-[9px]"></i> New Match
+                    </a>
+                </div>
+                <div class="p-5">
+                    {% if analyses %}
+                    <div class="space-y-3">
+                        {% for an in analyses|slice:":5" %}
+                        <div class="p-3.5 rounded-lg border border-slate-150 bg-white hover:border-slate-300 transition-all flex items-center justify-between group">
+                            <div class="flex items-center gap-3.5 overflow-hidden">
+                                <div class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 shadow-sm
+                                    {% if an.overall_score >= 80 %}
+                                        bg-emerald-50 text-emerald-600 border border-emerald-200
+                                    {% elif an.overall_score >= 55 %}
+                                        bg-amber-50 text-amber-600 border border-amber-200
+                                    {% else %}
+                                        bg-rose-50 text-rose-600 border border-rose-200
+                                    {% endif %}
+                                ">
+                                    {{ an.overall_score|floatformat:0 }}%
+                                </div>
+                                <div class="overflow-hidden">
+                                    <p class="font-semibold text-slate-750 text-xs truncate group-hover:text-indigo-600 transition-colors">{{ an.job_description.title }}</p>
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Matched on {{ an.created_at|date:"M d, Y" }}</p>
+                                </div>
+                            </div>
+                            <a href="{% url 'analysis_detail' an.id %}" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-md text-[10px] font-bold transition">
+                                View Report
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-8 text-slate-400 border border-dashed border-slate-200 rounded-lg bg-slate-50/30">
+                        <i class="fa-solid fa-chart-bar text-3xl mb-2 text-slate-300"></i>
+                        <p class="text-xs font-medium">No suitability calculations found.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column (width 1/3) -->
+        <div class="space-y-6">
+            <!-- Advisor Actions -->
+            <div class="premium-card p-5 rounded-xl shadow-sm bg-white border-slate-200">
+                <h3 class="font-bold text-slate-700 text-xs font-display uppercase tracking-wider border-b border-slate-100 pb-2.5 mb-3.5"><i class="fa-solid fa-rocket text-indigo-500 mr-2"></i>Advisor Actions</h3>
+                
+                <div class="space-y-2">
+                    <a href="{% url 'resume_upload' %}" class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100/50 transition group border-l-2 border-l-indigo-500">
+                        <div class="w-8 h-8 rounded bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                            <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <p class="font-bold text-slate-700 text-[11px] truncate">1. Upload Resume</p>
+                            <p class="text-[9px] text-slate-400 mt-0.5 uppercase tracking-wide">Extract profile sections</p>
+                        </div>
+                    </a>
+                    
+                    <a href="{% url 'match_create' %}" class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100/50 transition group border-l-2 border-l-purple-500">
+                        <div class="w-8 h-8 rounded bg-purple-50 flex items-center justify-center text-purple-600 shrink-0">
+                            <i class="fa-solid fa-sliders text-xs"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <p class="font-bold text-slate-700 text-[11px] truncate">2. Match Job Profile</p>
+                            <p class="text-[9px] text-slate-400 mt-0.5 uppercase tracking-wide">Calculate suitability scores</p>
+                        </div>
+                    </a>
+                    
+                    <a href="{% url 'career_recommend' %}" class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100/50 transition group border-l-2 border-l-emerald-500">
+                        <div class="w-8 h-8 rounded bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+                            <i class="fa-solid fa-route text-xs"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <p class="font-bold text-slate-700 text-[11px] truncate">3. Career Roadmap</p>
+                            <p class="text-[9px] text-slate-400 mt-0.5 uppercase tracking-wide">Markov path progression</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Profile Card -->
+            <div class="premium-card p-5 rounded-xl shadow-sm bg-white border-slate-200">
+                <h3 class="font-bold text-slate-700 text-xs font-display uppercase tracking-wider border-b border-slate-100 pb-2.5 mb-3.5"><i class="fa-solid fa-id-card text-indigo-500 mr-2"></i>My Profile</h3>
+                <div class="flex items-center gap-3.5 mb-3.5">
+                    <div class="w-10 h-10 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400">
+                        <i class="fa-solid fa-user-tie text-md text-indigo-500"></i>
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="font-bold text-slate-700 text-xs truncate">{{ user.username }}</p>
+                        <p class="text-[9px] text-slate-400 font-bold truncate uppercase tracking-wider mt-0.5">{{ user.email }}</p>
+                    </div>
+                </div>
+                <div class="space-y-2 pt-3 border-t border-slate-100 text-[11px]">
+                    <div class="flex justify-between">
+                        <span class="text-slate-400 font-medium">Current State:</span>
+                        <span class="text-slate-600 font-bold truncate max-w-[120px]">{{ user.profile.current_role|default:"Not set" }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400 font-medium">Experience:</span>
+                        <span class="text-slate-600 font-bold">{{ user.profile.experience_years|floatformat:1 }} Years</span>
+                    </div>
+                </div>
+                <a href="{% url 'profile' %}" class="mt-4 w-full flex justify-center py-2 border border-slate-250 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold rounded-lg text-[10px] transition uppercase tracking-wider shadow-sm">
+                    Edit Profile Details
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

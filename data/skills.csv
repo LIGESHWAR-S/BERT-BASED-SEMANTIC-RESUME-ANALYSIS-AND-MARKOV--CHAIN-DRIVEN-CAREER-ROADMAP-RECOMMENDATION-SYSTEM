@@ -1,0 +1,76 @@
+skill_name,category,aliases
+Python,Programming Languages,Py|Python3|Python 3
+Java,Programming Languages,Java Language|Core Java
+JavaScript,Programming Languages,JS|Javascript|ES6
+TypeScript,Programming Languages,TS|Typescript
+C++,Programming Languages,CPP|C plus plus
+C#,Programming Languages,C-Sharp|C Sharp
+Go,Programming Languages,Golang|Go Language
+Rust,Programming Languages,Rust Lang
+SQL,Programming Languages,Structured Query Language|PL/SQL
+HTML,Programming Languages,HTML5|HyperText Markup Language
+CSS,Programming Languages,CSS3|Cascading Style Sheets
+React,Frameworks,ReactJS|React.js|React JS
+Angular,Frameworks,AngularJS|Angular.js|Angular JS
+Vue.js,Frameworks,Vue|VueJS|Vue JS
+Django,Frameworks,Django Framework|Python Django
+Flask,Frameworks,Flask Framework
+FastAPI,Frameworks,Fast API
+Spring Boot,Frameworks,Spring|SpringBoot
+Express.js,Frameworks,Express|ExpressJS
+Next.js,Frameworks,NextJS|Next JS
+PostgreSQL,Databases,Postgres|Postgresql
+MySQL,Databases,My SQL
+MongoDB,Databases,Mongo|Mongo DB
+Redis,Databases,Redis Cache
+Cassandra,Databases,Apache Cassandra
+Oracle,Databases,Oracle DB|Oracle Database
+Docker,Cloud & DevOps,Docker Containers
+Kubernetes,Cloud & DevOps,K8s|K8s Orchestration
+AWS,Cloud & DevOps,Amazon Web Services|EC2|S3|RDS
+Azure,Cloud & DevOps,Microsoft Azure
+Google Cloud Platform,Cloud & DevOps,GCP|Google Cloud
+Git,Tools,GitHub|GitLab|Version Control
+Jira,Tools,Jira Software|Confluence
+Tableau,Data Analytics,Tableau Desktop|Tableau BI
+Power BI,Data Analytics,PowerBI|MS Power BI
+Microsoft Excel,Data Analytics,Excel|MS Excel|Spreadsheets
+Machine Learning,Data Science,ML|Predictive Modeling
+Deep Learning,Data Science,DL|Neural Networks
+Natural Language Processing,Data Science,NLP|Text Mining
+Computer Vision,Data Science,CV|Image Processing
+Pandas,Data Science,Pandas Library
+NumPy,Data Science,Numpy Library
+Scikit-Learn,Data Science,Sklearn|Scikit Learn
+PyTorch,Data Science,Pytorch Framework
+TensorFlow,Data Science,Tensorflow Framework
+Product Management,Management,Product Strategy|Roadmapping
+Agile,Management,Scrum|Agile Methodology
+Figma,Design,Figma Tool|Figma UI
+Adobe XD,Design,AdobeXD|XD
+Sketch,Design,Sketch Tool
+Search Engine Optimization,Marketing,SEO|SEO Specialist
+Google Analytics,Marketing,GA|Google Analytics 4
+Copywriting,Marketing,Content Writing|Copy writer
+Social Media Marketing,Marketing,SMM|Social Media
+Penetration Testing,Security,Pen Testing|Ethical Hacking
+Cryptography,Security,Encryption|Crypto
+Network Security,Security,Firewalls|Cybersecurity
+Communication,Soft Skills,Verbal Communication|Written Communication
+Leadership,Soft Skills,Team Leadership|Management
+Problem Solving,Soft Skills,Analytical Thinking|Troubleshooting
+Teamwork,Soft Skills,Collaboration|Team Player
+Project Management,Management,PMP|Project Coordination
+DevOps,Cloud & DevOps,CI/CD|Continuous Integration
+Kubernetes,Cloud & DevOps,K8s
+Terraform,Cloud & DevOps,Infrastructure as Code|IaC
+Ansible,Cloud & DevOps,Ansible Playbooks
+Jenkins,Cloud & DevOps,Jenkins CI
+Linux,Tools,Ubuntu|CentOS|RedHat|Bash
+Apache Spark,Data Science,Spark|PySpark
+Hadoop,Data Science,MapReduce|Big Data
+Spark,Data Science,Apache Spark
+Flask,Frameworks,Flask
+NestJS,Frameworks,Nest JS
+GraphQL,Programming Languages,GraphQL API
+REST API,Programming Languages,RESTful APIs|Web Services

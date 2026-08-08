@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Resume Details | CareerChain AI{% endblock %}
+{% block page_title %}Resume Profile View{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-6xl mx-auto">
+
+    <!-- Top Action Headers -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 pb-4">
+        <div>
+            <h2 class="text-xl font-bold text-slate-800 font-display">{{ resume.filename }}</h2>
+            <p class="text-[11px] text-slate-400 mt-1">Uploaded on {{ resume.uploaded_at|date:"F d, Y \a\t H:i" }} | Size: {{ resume.file_size|filesizeformat }}</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'match_create' %}?resume_id={{ resume.id }}" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg text-xs transition shadow-sm active:scale-[0.98] cursor-pointer">
+                <i class="fa-solid fa-bullseye mr-1.5"></i> Match Against Job
+            </a>
+            <a href="{% url 'career_recommend' %}?resume_id={{ resume.id }}" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-600 font-bold rounded-lg text-xs border border-slate-200 transition">
+                <i class="fa-solid fa-route mr-1.5"></i> Predict Career Path
+            </a>
+        </div>
+    </div>
+
+    <!-- Contact & Summary Card -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Contact Details -->
+        <div class="premium-card p-6 rounded-xl shadow-sm h-fit bg-white border-slate-200">
+            <h3 class="font-bold text-slate-700 text-sm font-display border-b border-slate-100 pb-3 mb-4">Extracted Contact Info</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Email Addresses</span>
+                    {% if resume.contact_info.emails %}
+                        {% for email in resume.contact_info.emails %}
+                            <a href="mailto:{{ email }}" class="text-indigo-600 hover:underline block text-xs font-semibold mt-1 truncate">{{ email }}</a>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-slate-400 text-xs mt-1 block">None detected</span>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Phone Numbers</span>
+                    {% if resume.contact_info.phones %}
+                        {% for ph in resume.contact_info.phones %}
+                            <span class="text-slate-600 block text-xs font-semibold mt-1">{{ ph }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-slate-400 text-xs mt-1 block">None detected</span>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Links & Profiles</span>
+                    {% if resume.contact_info.links %}
+                        {% for url in resume.contact_info.links %}
+                            <a href="{{ url }}" target="_blank" class="text-indigo-600 hover:underline block text-xs font-semibold mt-1 truncate"><i class="fa-solid fa-link mr-1 text-[10px]"></i>{{ url }}</a>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-slate-400 text-xs mt-1 block">None detected</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="lg:col-span-2 premium-card p-6 rounded-xl shadow-sm bg-white border-slate-200">
+            <h3 class="font-bold text-slate-700 text-sm font-display border-b border-slate-100 pb-3 mb-4">Extracted Summary</h3>
+            {% if resume.summary %}
+                <p class="text-slate-600 text-xs leading-relaxed whitespace-pre-line">{{ resume.summary }}</p>
+            {% else %}
+                <p class="text-slate-400 text-xs italic">No explicit summary section identified. The system utilizes semantic processing across the entire resume.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Skills, Education & Experience Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Extracted Skills -->
+        <div class="premium-card p-6 rounded-xl shadow-sm h-fit bg-white border-slate-200">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                <h3 class="font-bold text-slate-700 text-sm font-display">Normalized Skills</h3>
+                <span class="text-[10px] px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-md font-semibold">
+                    {{ resume.resume_skills.count }} Skills
+                </span>
+            </div>
+            
+            {% if resume.resume_skills.all %}
+            <div class="flex flex-wrap gap-1.5">
+                {% for rs in resume.resume_skills.all %}
+                <span class="px-2 py-1 bg-slate-50 border border-slate-200 hover:border-slate-350 rounded-lg text-xs text-slate-600 flex items-center gap-1.5 cursor-help" title="Matched in text as: '{{ rs.matched_text }}'">
+                    <span class="w-1.5 h-1.5 rounded-full {% if rs.skill.category == 'Programming Languages' %}bg-blue-500{% elif rs.skill.category == 'Frameworks' %}bg-violet-500{% elif rs.skill.category == 'Databases' %}bg-emerald-500{% elif rs.skill.category == 'Cloud & DevOps' %}bg-amber-500{% else %}bg-slate-400{% endif %}"></span>
+                    {{ rs.skill.name }}
+                </span>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-slate-400 text-xs italic py-4">No skills mapped. Verify your skills dictionary dataset or verify resume text formatting.</p>
+            {% endif %}
+        </div>
+
+        <!-- Experience & Education timeline -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Work Experience -->
+            <div class="premium-card p-6 rounded-xl shadow-sm bg-white border-slate-200">
+                <h3 class="font-bold text-slate-700 text-sm font-display border-b border-slate-100 pb-3 mb-4">Parsed Work History</h3>
+                {% if resume.experience_records.all %}
+                <div class="space-y-6 relative border-l border-slate-200 pl-4 ml-2 mt-4">
+                    {% for exp in resume.experience_records.all %}
+                    <div class="relative">
+                        <!-- Node indicator -->
+                        <span class="absolute -left-[23px] top-1.5 w-2.5 h-2.5 bg-white border-2 border-indigo-500 rounded-full"></span>
+                        
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs">{{ exp.job_title }}</h4>
+                            <p class="text-[10px] text-slate-400 mt-0.5">
+                                <span class="font-semibold text-slate-600">{{ exp.company }}</span>
+                                {% if exp.location %} | {{ exp.location }}{% endif %}
+                                | <span class="text-slate-400 font-medium">{{ exp.start_date|default:"N/A" }} - {{ exp.end_date|default:"Present" }}</span>
+                            </p>
+                            {% if exp.description %}
+                            <p class="text-slate-550 text-xs mt-2 leading-relaxed whitespace-pre-line bg-slate-50/50 p-3 rounded-lg border border-slate-200">{{ exp.description }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-slate-400 text-xs italic py-4">No structured work experience parsed.</p>
+                {% endif %}
+            </div>
+
+            <!-- Education -->
+            <div class="premium-card p-6 rounded-xl shadow-sm bg-white border-slate-200">
+                <h3 class="font-bold text-slate-700 text-sm font-display border-b border-slate-100 pb-3 mb-4">Parsed Education Records</h3>
+                {% if resume.education_records.all %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for edu in resume.education_records.all %}
+                    <div class="p-3.5 rounded-lg border border-slate-200 bg-slate-50/40 flex items-start gap-3">
+                        <div class="w-8 h-8 rounded bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0 mt-0.5">
+                            <i class="fa-solid fa-graduation-cap text-xs"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs">{{ edu.degree }}</h4>
+                            <p class="text-xs text-slate-500 mt-0.5 font-medium">{{ edu.institution }}</p>
+                            {% if edu.field_of_study %}
+                            <p class="text-[10px] text-slate-400 mt-0.5">Major: {{ edu.field_of_study }}</p>
+                            {% endif %}
+                            {% if edu.start_date or edu.end_date %}
+                            <p class="text-[9px] text-slate-400 font-bold uppercase mt-2 tracking-wider"><i class="fa-solid fa-calendar mr-1"></i>{{ edu.start_date|default:"N/A" }} - {{ edu.end_date|default:"N/A" }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-slate-400 text-xs italic py-4">No structured education records parsed.</p>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

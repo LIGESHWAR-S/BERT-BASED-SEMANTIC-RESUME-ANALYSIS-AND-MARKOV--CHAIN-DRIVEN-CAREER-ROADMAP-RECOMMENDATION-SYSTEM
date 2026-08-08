@@ -1,0 +1,33 @@
+from_role,to_role,transition_count,industry
+Intern,Junior Developer,40,Software Development
+Intern,Junior Data Analyst,15,Data Analytics
+Junior Developer,Software Developer,60,Software Development
+Junior Data Analyst,Data Analyst,35,Data Analytics
+Software Developer,Senior Developer,50,Software Development
+Software Developer,DevOps Engineer,15,Software Development
+Software Developer,Cloud Engineer,15,Software Development
+Data Analyst,Senior Data Analyst,30,Data Analytics
+Data Analyst,Data Scientist,20,Data Analytics
+Senior Developer,Tech Lead,35,Software Development
+Senior Developer,Architect,20,Software Development
+Cloud Support Engineer,Cloud Engineer,40,Cloud Computing
+Cloud Engineer,Senior Cloud Engineer,35,Cloud Computing
+Cloud Engineer,DevOps Engineer,20,Cloud Computing
+DevOps Engineer,Senior Cloud Engineer,15,Cloud Computing
+Senior Cloud Engineer,Architect,25,Cloud Computing
+Cybersecurity Analyst,Senior Cloud Engineer,10,Cybersecurity
+Cybersecurity Analyst,Architect,10,Cybersecurity
+Senior Data Analyst,Data Scientist,15,Data Science
+Senior Data Analyst,Product Owner,10,Data Analytics
+Data Scientist,Senior Data Scientist,40,Data Science
+Senior Data Scientist,Lead Data Scientist,25,Data Science
+Tech Lead,Engineering Manager,20,Software Development
+Tech Lead,Architect,15,Software Development
+UI/UX Designer,Senior UI/UX Designer,30,UI/UX
+Senior UI/UX Designer,Product Owner,15,UI/UX
+Product Owner,Product Manager,35,Project Management
+Product Manager,Senior Product Manager,25,Project Management
+Senior Product Manager,Engineering Manager,10,Project Management
+Digital Marketing Specialist,Digital Marketing Manager,35,Digital Marketing
+Digital Marketing Manager,Product Owner,15,Digital Marketing
+Lead Data Scientist,Engineering Manager,10,Data Science
