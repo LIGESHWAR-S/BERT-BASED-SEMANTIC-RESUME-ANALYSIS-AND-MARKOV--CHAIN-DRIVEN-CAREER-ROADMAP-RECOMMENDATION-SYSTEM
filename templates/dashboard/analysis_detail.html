@@ -299,23 +299,47 @@
             </span>
         </div>
         
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <a href="https://www.linkedin.com/jobs/search/?keywords={{ analysis.job_description.title|urlencode }}" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-[#0a66c2]/5 hover:bg-[#0a66c2]/10 border border-[#0a66c2]/20 hover:border-[#0a66c2]/40 text-[#0a66c2] rounded-lg text-xs font-bold transition shadow-sm">
-                <i class="fa-brands fa-linkedin text-base"></i> LinkedIn Jobs
-            </a>
-            
-            <a href="https://www.naukri.com/jobs-in-india?k={{ analysis.job_description.title|urlencode }}" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-[#091e42]/5 hover:bg-[#091e42]/10 border border-[#091e42]/20 hover:border-[#091e42]/40 text-[#091e42] rounded-lg text-xs font-bold transition shadow-sm">
-                <i class="fa-solid fa-graduation-cap text-base"></i> Naukri.com
-            </a>
-            
-            <a href="https://www.glassdoor.com/Job/jobs.htm?sc.keyword={{ analysis.job_description.title|urlencode }}" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-[#0caa41]/5 hover:bg-[#0caa41]/10 border border-[#0caa41]/20 hover:border-[#0caa41]/40 text-[#0caa41] rounded-lg text-xs font-bold transition shadow-sm">
-                <i class="fa-solid fa-door-open text-base"></i> Glassdoor Jobs
-            </a>
-            
-            <a href="https://www.indeed.com/jobs?q={{ analysis.job_description.title|urlencode }}" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-[#2164f3]/5 hover:bg-[#2164f3]/10 border border-[#2164f3]/20 hover:border-[#2164f3]/40 text-[#2164f3] rounded-lg text-xs font-bold transition shadow-sm">
-                <i class="fa-solid fa-magnifying-glass text-base"></i> Indeed Jobs
-            </a>
-        </div>
+        {% if analysis.resume.user.profile.experience_years < 1 %}
+            {% with query_term=analysis.job_description.title|add:" fresher" %}
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <a href="https://www.linkedin.com/jobs/search/?keywords={{ query_term|urlencode }}" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-[#0a66c2]/5 hover:bg-[#0a66c2]/10 border border-[#0a66c2]/20 hover:border-[#0a66c2]/40 text-[#0a66c2] rounded-lg text-xs font-bold transition shadow-sm cursor-pointer">
+                    <i class="fa-brands fa-linkedin text-base"></i> LinkedIn Jobs
+                </a>
+                
+                <a href="https://www.naukri.com/jobs-in-india?k={{ query_term|urlencode }}" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-[#091e42]/5 hover:bg-[#091e42]/10 border border-[#091e42]/20 hover:border-[#091e42]/40 text-[#091e42] rounded-lg text-xs font-bold transition shadow-sm cursor-pointer">
+                    <i class="fa-solid fa-graduation-cap text-base"></i> Naukri.com
+                </a>
+                
+                <a href="https://www.glassdoor.com/Job/jobs.htm?sc.keyword={{ query_term|urlencode }}" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-[#0caa41]/5 hover:bg-[#0caa41]/10 border border-[#0caa41]/20 hover:border-[#0caa41]/40 text-[#0caa41] rounded-lg text-xs font-bold transition shadow-sm cursor-pointer">
+                    <i class="fa-solid fa-door-open text-base"></i> Glassdoor Jobs
+                </a>
+                
+                <a href="https://www.indeed.com/jobs?q={{ query_term|urlencode }}" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-[#2164f3]/5 hover:bg-[#2164f3]/10 border border-[#2164f3]/20 hover:border-[#2164f3]/40 text-[#2164f3] rounded-lg text-xs font-bold transition shadow-sm cursor-pointer">
+                    <i class="fa-solid fa-magnifying-glass text-base"></i> Indeed Jobs
+                </a>
+            </div>
+            {% endwith %}
+        {% else %}
+            {% with query_term=analysis.job_description.title %}
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <a href="https://www.linkedin.com/jobs/search/?keywords={{ query_term|urlencode }}" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-[#0a66c2]/5 hover:bg-[#0a66c2]/10 border border-[#0a66c2]/20 hover:border-[#0a66c2]/40 text-[#0a66c2] rounded-lg text-xs font-bold transition shadow-sm cursor-pointer">
+                    <i class="fa-brands fa-linkedin text-base"></i> LinkedIn Jobs
+                </a>
+                
+                <a href="https://www.naukri.com/jobs-in-india?k={{ query_term|urlencode }}" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-[#091e42]/5 hover:bg-[#091e42]/10 border border-[#091e42]/20 hover:border-[#091e42]/40 text-[#091e42] rounded-lg text-xs font-bold transition shadow-sm cursor-pointer">
+                    <i class="fa-solid fa-graduation-cap text-base"></i> Naukri.com
+                </a>
+                
+                <a href="https://www.glassdoor.com/Job/jobs.htm?sc.keyword={{ query_term|urlencode }}" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-[#0caa41]/5 hover:bg-[#0caa41]/10 border border-[#0caa41]/20 hover:border-[#0caa41]/40 text-[#0caa41] rounded-lg text-xs font-bold transition shadow-sm cursor-pointer">
+                    <i class="fa-solid fa-door-open text-base"></i> Glassdoor Jobs
+                </a>
+                
+                <a href="https://www.indeed.com/jobs?q={{ query_term|urlencode }}" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-[#2164f3]/5 hover:bg-[#2164f3]/10 border border-[#2164f3]/20 hover:border-[#2164f3]/40 text-[#2164f3] rounded-lg text-xs font-bold transition shadow-sm cursor-pointer">
+                    <i class="fa-solid fa-magnifying-glass text-base"></i> Indeed Jobs
+                </a>
+            </div>
+            {% endwith %}
+        {% endif %}
     </div>
     {% endif %}
 
