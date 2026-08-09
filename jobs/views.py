@@ -266,7 +266,10 @@ def match_view(request):
                 all_target_skills = required_skills.union(preferred_skills)
                 matched_skills = user_skills.intersection(all_target_skills)
                 for s_name in matched_skills:
-                    skill = Skill.objects.get(name=s_name)
+                    skill, _ = Skill.objects.get_or_create(
+                        name=s_name,
+                        defaults={'category': 'General'}
+                    )
                     SkillGap.objects.create(
                         analysis_result=result,
                         skill=skill,
@@ -278,7 +281,10 @@ def match_view(request):
                 # 2. Missing Required Skills (Critical/High Priority)
                 missing_required = required_skills.difference(user_skills)
                 for s_name in missing_required:
-                    skill = Skill.objects.get(name=s_name)
+                    skill, _ = Skill.objects.get_or_create(
+                        name=s_name,
+                        defaults={'category': 'General'}
+                    )
                     SkillGap.objects.create(
                         analysis_result=result,
                         skill=skill,
@@ -290,7 +296,10 @@ def match_view(request):
                 # 3. Missing Preferred Skills (Recommended/Medium/Low Priority)
                 missing_preferred = preferred_skills.difference(user_skills)
                 for s_name in missing_preferred:
-                    skill = Skill.objects.get(name=s_name)
+                    skill, _ = Skill.objects.get_or_create(
+                        name=s_name,
+                        defaults={'category': 'General'}
+                    )
                     SkillGap.objects.create(
                         analysis_result=result,
                         skill=skill,
