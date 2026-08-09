@@ -29,13 +29,21 @@ class SBERTModelManager:
         """
         Thread-safe lazy loading of the SentenceTransformer model.
         """
+        import os
+        if os.environ.get('DISABLE_SBERT', 'False') == 'True':
+            return None
+            
         if self.model is None:
             with self._load_lock:
                 if self.model is None:
-                    # Lazy import to speed up startup of django management commands
-                    from sentence_transformers import SentenceTransformer
-                    # This will automatically download and cache the model locally
-                    self.model = SentenceTransformer(self.model_name)
+                    try:
+                        # Lazy import to speed up startup of django management commands
+                        from sentence_transformers import SentenceTransformer
+                        # This will automatically download and cache the model locally
+                        self.model = SentenceTransformer(self.model_name)
+                    except Exception as e:
+                        print(f"SBERT model loading failed: {str(e)}. Falling back to mock embeddings.")
+                        self.model = None
         return self.model
 
     def get_embedding(self, text):
@@ -48,9 +56,16 @@ class SBERTModelManager:
             return np.zeros(384, dtype=np.float32)
             
         model = self.get_model()
-        # Encode returns a numpy array
-        embedding = model.encode(text, convert_to_numpy=True)
-        return embedding
+        if model is None:
+            return np.zeros(384, dtype=np.float32)
+            
+        try:
+            # Encode returns a numpy array
+            embedding = model.encode(text, convert_to_numpy=True)
+            return embedding
+        except Exception as e:
+            print(f"SBERT encoding failed: {str(e)}. Returning zero vector.")
+            return np.zeros(384, dtype=np.float32)
 
     def serialize_embedding(self, embedding):
         """
