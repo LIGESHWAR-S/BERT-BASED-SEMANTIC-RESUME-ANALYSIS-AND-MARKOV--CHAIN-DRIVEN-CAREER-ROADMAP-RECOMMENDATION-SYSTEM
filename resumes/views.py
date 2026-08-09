@@ -150,6 +150,16 @@ def dashboard_home(request):
     latest_resume = resumes.first()
     latest_analysis = analyses.first()
     
+    latest_missing_skills = []
+    latest_recommended_skills = []
+    latest_matched_skills = []
+    
+    if latest_analysis:
+        gaps = latest_analysis.skill_gaps.all()
+        latest_missing_skills = [g for g in gaps if g.status == 'missing']
+        latest_recommended_skills = [g for g in gaps if g.status == 'recommended']
+        latest_matched_skills = [g for g in gaps if g.status == 'matched']
+    
     context = {
         'resumes': resumes,
         'analyses': analyses,
@@ -157,6 +167,9 @@ def dashboard_home(request):
         'total_analyses': total_analyses,
         'latest_resume': latest_resume,
         'latest_analysis': latest_analysis,
+        'latest_missing_skills': latest_missing_skills,
+        'latest_recommended_skills': latest_recommended_skills,
+        'latest_matched_skills': latest_matched_skills,
     }
     return render(request, 'dashboard/index.html', context)
 
